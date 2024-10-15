@@ -23,7 +23,7 @@ TRUSTED_USERS = [
 # Create the bot with command prefix '!'
 intents = discord.Intents.default()
 intents.messages = True
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix='?', intents=intents)
 
 
 
@@ -135,6 +135,14 @@ async def world_idle(ctx, game_slug):
         await ctx.send(f"World '{game_slug}' is now idle.")
     else:
         await ctx.send("Failed to idle the world. Please check the game slug or your permissions.")
+
+
+# will only respond to users, not other bots
+@bot.event
+async def on_message(message):
+    if message.author.bot:  # Ignore messages from other bots
+        return
+    await bot.process_commands(message)
 
 
 @bot.event
