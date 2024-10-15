@@ -11,13 +11,21 @@ load_dotenv()
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 FORGE_API_KEY = os.getenv('FORGE_API_KEY')
 
+# TODO
 # Define trusted users' Discord IDs
-TRUSTED_USERS = [123456789012345678]  # Replace with actual trusted user IDs
+TRUSTED_USERS = [
+    135630872652021761, # Dark
+    89850959345246208, # Tanis
+    279459304023654400, # Sarhara
+    254640527369175041 # ElPresidente
+]  # Replace with actual trusted user IDs
 
 # Create the bot with command prefix '!'
 intents = discord.Intents.default()
 intents.messages = True
 bot = commands.Bot(command_prefix='!', intents=intents)
+
+
 
 # Function to check status of all games
 def get_world_status():
@@ -77,6 +85,11 @@ def idle_world(game_slug, force=False, world=None):
         print(f"Error: {e}")
         return False
 
+
+@bot.command(name='ping')
+async def ping(ctx):
+    await ctx.send('Pong!')
+
 # Bot command: Check world statuses
 @bot.command(name='world-status')
 async def world_status(ctx):
@@ -122,6 +135,12 @@ async def world_idle(ctx, game_slug):
         await ctx.send(f"World '{game_slug}' is now idle.")
     else:
         await ctx.send("Failed to idle the world. Please check the game slug or your permissions.")
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    await ctx.send(f"An error occurred: {str(error)}")
+    print(f"Error: {error}")
 
 # Run the bot using the token from the .env file
 bot.run(DISCORD_BOT_TOKEN)
