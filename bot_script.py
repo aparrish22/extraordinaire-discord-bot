@@ -36,7 +36,9 @@ def get_world_status():
         response = requests.get('https://forge-vtt.com/api/game/status', headers=headers)
         if response.status_code == 200:
             return response.json()  # Return the list of games with status
-        return None
+        else:
+            print(f"Error: Received status code {response.status_code}")
+            return None
     except Exception as e:
         print(f"Error: {e}")
         return None
