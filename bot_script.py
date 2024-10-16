@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 import requests
+import json
+import os
 from dotenv import load_dotenv
 import os
 
@@ -11,7 +13,6 @@ load_dotenv()
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 FORGE_API_KEY = os.getenv('FORGE_API_KEY')
 
-# TODO
 # Define trusted users' Discord IDs
 TRUSTED_USERS = [
     135630872652021761, # Dark
@@ -20,89 +21,98 @@ TRUSTED_USERS = [
     254640527369175041 # ElPresidente
 ]  # Replace with actual trusted user IDs
 
+# dictionary to track world statuses (online/offline)
+dict_world_statuses = {}
+
 # Create the bot with command prefix '!'
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-
-
-# Function to check status of all games
-def get_world_status():
-    headers = {
-        'Access-Key': FORGE_API_KEY
-    }
+# Load world statuses from file on bot startup
+def load_world_statuses():
+    global world_statuses
     try:
-        response = requests.get('https://forge-vtt.com/api/game/status', headers=headers)
-        if response.status_code == 200:
-            return response.json()  # Return the list of games with status
-        else:
-            print(f"Error: Received status code {response.status_code}")
-            return None
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+        with open('world_statuses.json', 'r') as f:
+            world_statuses = json.load(f)
+    except FileNotFoundError:
+        world_statuses = {}
 
-# Function to start a specific game by slug
+# Save world statuses to file after each update
+def save_world_statuses():
+    with open('world_statuses.json', 'w') as f:
+        json.dump(world_statuses, f)
+
+# Start a specific world by slug and update its status
 def start_world(game_slug):
     headers = {
         'Access-Key': FORGE_API_KEY,
         'Content-Type': 'application/json'
     }
     try:
-        response = requests.post('https://forge-vtt.com/api/game/start', headers=headers, json={'game': game_slug})
-        return response.status_code == 200
+        response = requests.post(f'https://forge-vtt.com/api/game/start', headers=headers, json={'game': game_slug})
+        if response.status_code == 200:
+            world_statuses[game_slug] = 'Online'  # Update world status
+            save_world_statuses()
+            return True
+        else:
+            print(f"Error starting world: {response.text}")
+            return False
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Exception: {e}")
         return False
 
-# Function to stop a specific game by slug
+# Stop a specific world by slug and update its status
 def stop_world(game_slug):
     headers = {
         'Access-Key': FORGE_API_KEY,
         'Content-Type': 'application/json'
     }
     try:
-        response = requests.post('https://forge-vtt.com/api/game/stop', headers=headers, json={'game': game_slug})
-        return response.status_code == 200
+        response = requests.post(f'https://forge-vtt.com/api/game/stop', headers=headers, json={'game': game_slug})
+        if response.status_code == 200:
+            world_statuses[game_slug] = 'Offline'  # Update world status
+            save_world_statuses()
+            return True
+        else:
+            print(f"Error stopping world: {response.text}")
+            return False
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Exception: {e}")
         return False
 
-# Function to idle a specific game by slug
-def idle_world(game_slug, force=False, world=None):
+# Idle a specific world by slug and update its status
+def idle_world(game_slug):
     headers = {
         'Access-Key': FORGE_API_KEY,
         'Content-Type': 'application/json'
     }
-    body = {'game': game_slug}
-    if force:
-        body['force'] = True
-    if world:
-        body['world'] = world
     try:
-        response = requests.post('https://forge-vtt.com/api/game/idle', headers=headers, json=body)
-        return response.status_code == 200
+        response = requests.post(f'https://forge-vtt.com/api/game/idle', headers=headers, json={'game': game_slug})
+        if response.status_code == 200:
+            world_statuses[game_slug] = 'Idle'  # Update world status
+            save_world_statuses()
+            return True
+        else:
+            print(f"Error idling world: {response.text}")
+            return False
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Exception: {e}")
         return False
 
+# Manually reset a world status (for edge case where bot wasn't online)
+def reset_world_status(game_slug, status):
+    world_statuses[game_slug] = status  # Manually set world status
+    save_world_statuses()
 
-@bot.command(name='ping')
-async def ping(ctx):
-    await ctx.send('Pong!')
+# Load world statuses when the bot is ready
+@bot.event
+async def on_ready():
+    load_world_statuses()
+    print(f'Logged in as {bot.user.name}')
+    print(f"Connected to: {', '.join([guild.name for guild in bot.guilds])}")
 
-# Bot command: Check world statuses
-@bot.command(name='world-status')
-async def world_status(ctx):
-    worlds = get_world_status()
-    if worlds:
-        status_report = '\n'.join([f"World: {world['name']}, Status: {'Online' if world['active'] else 'Offline'}" for world in worlds])
-        await ctx.send(f"World Status:\n{status_report}")
-    else:
-        await ctx.send("Error retrieving world statuses.")
-
-# Bot command: Start a world
+# Command: Start a world
 @bot.command(name='world-on')
 async def world_on(ctx, game_slug):
     if ctx.author.id not in TRUSTED_USERS:
@@ -114,7 +124,7 @@ async def world_on(ctx, game_slug):
     else:
         await ctx.send("Failed to start the world. Please check the game slug or your permissions.")
 
-# Bot command: Stop a world
+# Command: Stop a world
 @bot.command(name='world-off')
 async def world_off(ctx, game_slug):
     if ctx.author.id not in TRUSTED_USERS:
@@ -126,7 +136,7 @@ async def world_off(ctx, game_slug):
     else:
         await ctx.send("Failed to stop the world. Please check the game slug or your permissions.")
 
-# Bot command: Idle a world
+# Command: Idle a world
 @bot.command(name='world-idle')
 async def world_idle(ctx, game_slug):
     if ctx.author.id not in TRUSTED_USERS:
@@ -138,19 +148,34 @@ async def world_idle(ctx, game_slug):
     else:
         await ctx.send("Failed to idle the world. Please check the game slug or your permissions.")
 
+# Command: Check the status of all worlds
+@bot.command(name='world-status')
+async def world_status(ctx):
+    if world_statuses:
+        status_report = '\n'.join([f"World: {world}, Status: {status}" for world, status in world_statuses.items()])
+        await ctx.send(f"World Status:\n{status_report}")
+    else:
+        await ctx.send("No world statuses available. You may need to start or stop a world first.")
 
-# will only respond to users, not other bots
-@bot.event
-async def on_message(message):
-    if message.author.bot:  # Ignore messages from other bots
+# Command: Manually reset a world status (EDGE CASE handling)
+@bot.command(name='reset-status')
+async def reset_status(ctx, game_slug, status):
+    if ctx.author.id not in TRUSTED_USERS:
+        await ctx.send("You do not have permission to use this command.")
         return
-    await bot.process_commands(message)
 
+    if status.lower() not in ['online', 'offline', 'idle']:
+        await ctx.send("Invalid status. Valid statuses are 'online', 'offline', or 'idle'.")
+        return
 
+    reset_world_status(game_slug, status.capitalize())
+    await ctx.send(f"World '{game_slug}' status has been manually reset to '{status.capitalize()}'.")
+
+# Log any command errors
 @bot.event
 async def on_command_error(ctx, error):
     await ctx.send(f"An error occurred: {str(error)}")
-    print(f"Error: {error}")
+    print(f"Error in command: {error}")
 
 # Run the bot using the token from the .env file
 bot.run(DISCORD_BOT_TOKEN)
