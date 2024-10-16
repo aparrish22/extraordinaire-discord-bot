@@ -22,7 +22,7 @@ TRUSTED_USERS = [
 ]  # Replace with actual trusted user IDs
 
 # dictionary to track world statuses (online/offline)
-dict_world_statuses = {}
+world_statuses = {}
 
 # Create the bot with command prefix '!'
 intents = discord.Intents.default()
