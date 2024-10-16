@@ -22,8 +22,8 @@ TRUSTED_USERS = [
 
 # Create the bot with command prefix '!'
 intents = discord.Intents.default()
-intents.messages = True
-bot = commands.Bot(command_prefix='?', intents=intents)
+intents.message_content = True
+bot = commands.Bot(command_prefix='!', intents=intents)
 
 
 
