@@ -29,6 +29,23 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# Predefined list of game slugs
+predefined_games = ['dndextraordinaire-wd', 'dndextraordinaire-sh', 'dndextraordinaire-hws', 'dndextraordinaire-cos', 'dndextraordinaire-wc']
+
+# Command: Whisper the list of predefined games to the user
+@bot.command(name='list-games')
+async def list_games(ctx):
+    # Format the list of games as a string
+    games_list = '\n'.join(predefined_games)
+    
+    # Try to send a direct message (DM) to the user
+    try:
+        await ctx.author.send(f"Here is a list of available games:\n{games_list}")
+        await ctx.send(f"{ctx.author.mention}, I have sent you a DM with the list of available games.")
+    except discord.Forbidden:
+        # If the bot can't send a DM (e.g., user has DMs turned off), send a public message
+        await ctx.send(f"{ctx.author.mention}, I couldn't send you a DM. Please check your privacy settings.")
+
 # Load world statuses from file on bot startup
 def load_world_statuses():
     global world_statuses
@@ -47,12 +64,13 @@ def save_world_statuses():
 def start_world(game_slug):
     headers = {
         'Access-Key': FORGE_API_KEY,
-        'Content-Type': 'application/json'
+        'content-type': 'application/json'
     }
     try:
         response = requests.post(f'https://forge-vtt.com/api/game/start', headers=headers, json={'game': game_slug})
         if response.status_code == 200:
             world_statuses[game_slug] = 'Online'  # Update world status
+            print(f"Changing {game_slug}'s World status to Online")
             save_world_statuses()
             return True
         else:
@@ -66,12 +84,13 @@ def start_world(game_slug):
 def stop_world(game_slug):
     headers = {
         'Access-Key': FORGE_API_KEY,
-        'Content-Type': 'application/json'
+        'content-type': 'application/json'
     }
     try:
         response = requests.post(f'https://forge-vtt.com/api/game/stop', headers=headers, json={'game': game_slug})
         if response.status_code == 200:
             world_statuses[game_slug] = 'Offline'  # Update world status
+            print(f"Changing {game_slug}'s World status to Offline")
             save_world_statuses()
             return True
         else:
@@ -85,12 +104,13 @@ def stop_world(game_slug):
 def idle_world(game_slug):
     headers = {
         'Access-Key': FORGE_API_KEY,
-        'Content-Type': 'application/json'
+        'content-type': 'application/json'
     }
     try:
         response = requests.post(f'https://forge-vtt.com/api/game/idle', headers=headers, json={'game': game_slug})
         if response.status_code == 200:
             world_statuses[game_slug] = 'Idle'  # Update world status
+            print(f"Changing {game_slug}'s World status to Idle")
             save_world_statuses()
             return True
         else:

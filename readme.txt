@@ -10,6 +10,16 @@ use virtual environment with the command:
 	5.	Reattach to the tmux session:
 	•	To check on the bot later, SSH into the EC2 instance and run:
         tmux attach -t discordbot
+        
+To detach from discordbot session, use (literally use CTRL on macbook keyboard) CTRL + B then press D
+
 
 ## bot invite link for discord user
 https://discordapp.com/oauth2/authorize?&client_id=[insert_client_id]&scope=bot
+
+To start the bot, use python bot_script.py
+
+game_slug argument must be the title of game world found in URL, for example, dndextraordinaire-wd is the Waterdeep campaign foundry world.
+
+# TODO
+check if arguments accept game name as a String with quotes or without quotes, and if the api call actually changes it
