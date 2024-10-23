@@ -140,7 +140,7 @@ async def world_on(ctx, game_slug):
         return
 
     if start_world(game_slug):
-        await ctx.send(f"World '{game_slug}' is now online.")
+        await ctx.author.send(f"World '{game_slug}' is now online.")
     else:
         await ctx.send("Failed to start the world. Please check the game slug or your permissions.")
 
@@ -152,7 +152,7 @@ async def world_off(ctx, game_slug):
         return
 
     if stop_world(game_slug):
-        await ctx.send(f"World '{game_slug}' is now offline.")
+        await ctx.author.send(f"World '{game_slug}' is now offline.")
     else:
         await ctx.send("Failed to stop the world. Please check the game slug or your permissions.")
 
@@ -164,7 +164,7 @@ async def world_idle(ctx, game_slug):
         return
 
     if idle_world(game_slug):
-        await ctx.send(f"World '{game_slug}' is now idle.")
+        await ctx.author.send(f"World '{game_slug}' is now idle.")
     else:
         await ctx.send("Failed to idle the world. Please check the game slug or your permissions.")
 
@@ -173,7 +173,7 @@ async def world_idle(ctx, game_slug):
 async def world_status(ctx):
     if world_statuses:
         status_report = '\n'.join([f"World: {world}, Status: {status}" for world, status in world_statuses.items()])
-        await ctx.send(f"World Status:\n{status_report}")
+        await ctx.author.send(f"World Status:\n{status_report}")
     else:
         await ctx.send("No world statuses available. You may need to start or stop a world first.")
 
@@ -189,12 +189,12 @@ async def reset_status(ctx, game_slug, status):
         return
 
     reset_world_status(game_slug, status.capitalize())
-    await ctx.send(f"World '{game_slug}' status has been manually reset to '{status.capitalize()}'.")
+    await ctx.author.send(f"World '{game_slug}' status has been manually reset to '{status.capitalize()}'.")
 
 # Log any command errors
 @bot.event
 async def on_command_error(ctx, error):
-    await ctx.send(f"An error occurred: {str(error)}")
+    await ctx.author.send(f"An error occurred: {str(error)}")
     print(f"Error in command: {error}")
 
 # Run the bot using the token from the .env file
