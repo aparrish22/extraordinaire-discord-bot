@@ -142,7 +142,7 @@ async def world_on(ctx, game_slug):
     if start_world(game_slug):
         await ctx.author.send(f"World '{game_slug}' is now online.")
     else:
-        await ctx.send("Failed to start the world. Please check the game slug or your permissions.")
+        await ctx.send("Failed to start the world. Please check your game URL or your permissions.")
 
 # Command: Stop a world
 @bot.command(name='world-off')
@@ -154,7 +154,7 @@ async def world_off(ctx, game_slug):
     if stop_world(game_slug):
         await ctx.author.send(f"World '{game_slug}' is now offline.")
     else:
-        await ctx.send("Failed to stop the world. Please check the game slug or your permissions.")
+        await ctx.send("Failed to stop the world. Please check your game URL or your permissions.")
 
 # Command: Idle a world
 @bot.command(name='world-idle')
@@ -166,13 +166,18 @@ async def world_idle(ctx, game_slug):
     if idle_world(game_slug):
         await ctx.author.send(f"World '{game_slug}' is now idle.")
     else:
-        await ctx.send("Failed to idle the world. Please check the game slug or your permissions.")
+        await ctx.send("Failed to idle the world. Please check your game URL or your permissions.")
 
 # Command: Check the status of all worlds
 @bot.command(name='world-status')
 async def world_status(ctx):
     if world_statuses:
-        status_report = '\n'.join([f"World: {world}, Status: {status}" for world, status in world_statuses.items()])
+        cnt = 1
+        status_report = ""
+        
+        for world, status in world_statuses.items():
+            status_report += f"World {cnt}: {world} | Status: {status}\n"
+            cnt += 1
         await ctx.author.send(f"World Status:\n{status_report}")
     else:
         await ctx.send("No world statuses available. You may need to start or stop a world first.")
