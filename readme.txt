@@ -1,3 +1,9 @@
+## Forge-VTT API Discord Bot | Personal Discord Bot for d&d extraordinaire community
+
+### Hosting on AWS Cloud EC2 Server
+### Robust python API for connecting with Worlds/Servers hosted on Forge VTT
+#### Gives administrative permissions for users, in this case friends and designated community members, to toggle world/servers to online or offline according to which d&d campaign will be hosted per week.   
+
 ssh login (be sure to double check your IP address on AWS):
     ssh -i "DiscordBotKeyPairName.pem" ec2-user@3.21.242.56
 
