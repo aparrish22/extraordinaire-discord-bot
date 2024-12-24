@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import requests
 import json
 import os
@@ -13,6 +13,9 @@ load_dotenv()
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 FORGE_API_KEY = os.getenv('FORGE_API_KEY')
 
+# API URLS
+FORGE_API_URL_WORLDS = 'https://forge-vtt.com/api/data/worlds'
+
 # Define trusted users' Discord IDs
 TRUSTED_USERS = [
     135630872652021761, # Dark
@@ -22,6 +25,7 @@ TRUSTED_USERS = [
 ]  # Replace with actual trusted user IDs
 
 # dictionary to track world statuses (online/offline)
+# k = '
 world_statuses = {}
 
 # Create the bot with command prefix '!'
@@ -32,9 +36,42 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 # Predefined list of game slugs
 predefined_games = ['dndextraordinaire-wd', 'dndextraordinaire-sh', 'dndextraordinaire-hws', 'dndextraordinaire-cos', 'dndextraordinaire-wc']
 
+# TODO refer to Postman collection api tests
+async def _get_status():
+    headers = {
+        'Access-Key': FORGE_API_KEY,
+        'content-type': 'application/json'
+    }
+    try:
+        response = requests.get(FORGE_API_URL_WORLDS, headers=headers)
+        response.raise_for_status()
+        status_data = response.json()
+        new_status = status_data.get('status')  # Adjust based on actual response structure
+
+        if new_status != current_status:
+            # TODO
+            print('')
+            
+    except Exception as e:
+        print(f"Error fetching game status: {e}")
+
+# auto check server status: bot's statuses VS server's statuses
+@tasks.loop(minutes=360)
+async def check_game_status():
+    headers = {
+        'Access-Key': FORGE_API_KEY,
+        'content-type': 'application/json'
+    }
+    
+    # TODO
+    for w, s in world_statuses.items():
+        if s.lower() != current_status:
+            current_status = new_status
+
 # Command: Whisper the list of predefined games to the user
 @bot.command(name='list-games')
 async def list_games(ctx):
+    
     # Format the list of games as a string
     games_list = '\n'.join(predefined_games)
     

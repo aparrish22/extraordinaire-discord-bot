@@ -15,7 +15,8 @@ To detach from discordbot session, use (literally use CTRL on macbook keyboard) 
 
 
 ## bot invite link for discord user
-https://discordapp.com/oauth2/authorize?&client_id=[insert_client_id]&scope=bot
+check .env file
+if using your own discord, setup discord app bot
 
 To start the bot, use python bot_script.py
 
