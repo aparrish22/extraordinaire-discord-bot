@@ -21,7 +21,8 @@ TRUSTED_USERS = [
     135630872652021761, # Dark
     89850959345246208, # Tanis
     279459304023654400, # Sarhara
-    254640527369175041 # ElPresidente
+    169688073226027008, # Stampapa
+   # 254640527369175041 # ElPresidente
 ]  # Replace with actual trusted user IDs
 
 # dictionary to track world statuses (online/offline)
