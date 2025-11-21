@@ -1,3 +1,15 @@
+# Discord Bot for Managing ForgeVTT Worlds
+# This bot allows trusted users to start, stop, idle, and check the status of game worlds on ForgeVTT.
+# It uses Discord.py for bot interactions and Requests for API calls.
+# Make sure to set up a .env file with DISCORD_BOT_TOKEN and FORGE_API_KEY.
+# Required Libraries: discord.py, requests, python-dotenv
+# To install dependencies, run:
+# pip install discord.py requests python-dotenv
+# Note: This script assumes you have a basic understanding of Python and Discord bot development
+# and have already created a Discord bot and obtained its token.
+# Author: Austin Parrish
+
+
 import discord
 from discord.ext import commands, tasks
 import requests
@@ -34,15 +46,22 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# Creating headers global variable for API requests
+# contains access key and content type
+headers = {
+    'Access-Key': FORGE_API_KEY,
+    'content-type': 'application/json'
+}
+
 # Predefined list of game slugs
 predefined_games = ['dndextraordinaire-wd', 'dndextraordinaire-sh', 'dndextraordinaire-hws', 'dndextraordinaire-cos', 'dndextraordinaire-wc']
 
 # TODO refer to Postman collection api tests
 async def _get_status():
-    headers = {
-        'Access-Key': FORGE_API_KEY,
-        'content-type': 'application/json'
-    }
+    # headers = {
+    #     'Access-Key': FORGE_API_KEY,
+    #     'content-type': 'application/json'
+    # }
     try:
         response = requests.get(FORGE_API_URL_WORLDS, headers=headers)
         response.raise_for_status()
@@ -59,10 +78,10 @@ async def _get_status():
 # auto check server status: bot's statuses VS server's statuses
 @tasks.loop(minutes=360)
 async def check_game_status():
-    headers = {
-        'Access-Key': FORGE_API_KEY,
-        'content-type': 'application/json'
-    }
+    # headers = {
+    #     'Access-Key': FORGE_API_KEY,
+    #     'content-type': 'application/json'
+    # }
     
     # TODO
     for w, s in world_statuses.items():
@@ -100,10 +119,10 @@ def save_world_statuses():
 
 # Start a specific world by slug and update its status
 def start_world(game_slug):
-    headers = {
-        'Access-Key': FORGE_API_KEY,
-        'content-type': 'application/json'
-    }
+    # headers = {
+    #     'Access-Key': FORGE_API_KEY,
+    #     'content-type': 'application/json'
+    # }
     try:
         response = requests.post(f'https://forge-vtt.com/api/game/start', headers=headers, json={'game': game_slug})
         if response.status_code == 200:
@@ -120,10 +139,10 @@ def start_world(game_slug):
 
 # Stop a specific world by slug and update its status
 def stop_world(game_slug):
-    headers = {
-        'Access-Key': FORGE_API_KEY,
-        'content-type': 'application/json'
-    }
+    # headers = {
+    #     'Access-Key': FORGE_API_KEY,
+    #     'content-type': 'application/json'
+    # }
     try:
         response = requests.post(f'https://forge-vtt.com/api/game/stop', headers=headers, json={'game': game_slug})
         if response.status_code == 200:
@@ -140,10 +159,10 @@ def stop_world(game_slug):
 
 # Idle a specific world by slug and update its status
 def idle_world(game_slug):
-    headers = {
-        'Access-Key': FORGE_API_KEY,
-        'content-type': 'application/json'
-    }
+    # headers = {
+    #     'Access-Key': FORGE_API_KEY,
+    #     'content-type': 'application/json'
+    # }
     try:
         response = requests.post(f'https://forge-vtt.com/api/game/idle', headers=headers, json={'game': game_slug})
         if response.status_code == 200:
